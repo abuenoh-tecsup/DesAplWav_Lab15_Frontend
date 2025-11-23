@@ -1,37 +1,63 @@
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import { Product, ApiResponse } from '@/types/product';
+"use client";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { useAuthGuard } from "@/hooks/useAuthGuard";
+import { Product, ApiResponse } from "@/types/product";
 
-async function getProduct(id: string): Promise<Product | null> {
-  try {
-    const res = await fetch(`${API_URL}/products/${id}`, {
-      cache: 'no-store',
-    });
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
-    if (!res.ok) return null;
+export default function ProductDetailPage() {
+  useAuthGuard(["ADMIN", "CUSTOMER"]);
 
-    const data: ApiResponse<Product> = await res.json();
-    return data.success ? data.data : null;
-  } catch (error) {
-    console.error('Error fetching product:', error);
-    return null;
+  const { id } = useParams<{ id: string }>();
+
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const getProduct = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_URL}/products/${id}`, {
+        cache: "no-store",
+      });
+
+      if (!res.ok) {
+        setProduct(null);
+        return;
+      }
+
+      const data: ApiResponse<Product> = await res.json();
+      setProduct(data.success ? data.data : null);
+    } catch (error) {
+      console.error("Error fetching product:", error);
+      setProduct(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [id]); // depende solo del id
+
+  useEffect(() => {
+    if (id) getProduct();
+  }, [id, getProduct]);
+
+  if (loading) {
+    return (
+      <p className="p-6 text-center text-gray-600">
+        Cargando información del producto...
+      </p>
+    );
   }
-}
-
-type Props = {
-  params: Promise<{ id: string }>;
-};
-
-export default async function ProductDetailPage({ params }: Props) {
-  const resolvedParams = await params;
-  const { id } = resolvedParams;
-
-  const product = await getProduct(id);
 
   if (!product) {
-    notFound();
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-12 text-center">
+        <p className="text-gray-500 text-lg mb-4">Producto no encontrado</p>
+        <Link href="/" className="text-gray-900 font-medium hover:underline">
+          ← Volver a productos
+        </Link>
+      </div>
+    );
   }
 
   return (
@@ -47,6 +73,7 @@ export default async function ProductDetailPage({ params }: Props) {
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
           {product.nombre}
         </h1>
+
         <div className="text-3xl font-bold text-gray-900 mb-6">
           ${product.precio}
         </div>

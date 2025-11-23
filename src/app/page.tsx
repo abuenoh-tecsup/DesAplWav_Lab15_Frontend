@@ -1,26 +1,43 @@
-import Link from 'next/link';
-import { Product, ApiResponse } from '@/types/product';
+"use client";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useAuthGuard } from "@/hooks/useAuthGuard";
+import { Product, ApiResponse } from "@/types/product";
 
-async function getProducts(): Promise<Product[]> {
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+
+export default function HomePage() {
+  useAuthGuard(["ADMIN", "CUSTOMER"]);
+
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  async function getProducts() {
     try {
-        const res = await fetch(`${API_URL}/products`, {
-            cache: 'no-store',
-        });
+      const res = await fetch(`${API_URL}/products`, {
+        cache: "no-store",
+      });
 
-        if (!res.ok) return [];
-
-        const data: ApiResponse<Product[]> = await res.json();
-        return data.success ? data.data : [];
+      const data: ApiResponse<Product[]> = await res.json();
+      setProducts(data.success ? data.data : []);
     } catch (error) {
-        console.error('Error fetching products:', error);
-        return [];
+      console.error("Error fetching products:", error);
+      setProducts([]);
+    } finally {
+      setLoading(false);
     }
-}
+  }
 
-export default async function HomePage() {
-  const products = await getProducts();
+  useEffect(() => {
+    getProducts();
+  }, []);
+
+  if (loading) {
+    return (
+      <p className="p-6 text-center text-gray-600">Cargando productos...</p>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

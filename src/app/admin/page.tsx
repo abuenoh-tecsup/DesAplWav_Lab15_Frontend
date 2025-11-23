@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { Product, ApiResponse } from '@/types/product';
+import { useAuthGuard } from '@/hooks/useAuthGuard';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 export default function AdminPage() {
+    useAuthGuard(["ADMIN"]);
     // ESTADO
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
