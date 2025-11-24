@@ -140,181 +140,227 @@ export default function AdminPage() {
     }
 
     // UI COMPLETA
-    return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-gray-900">
-            <h1 className="text-3xl font-bold text-gray-900 mb-8">
-                Administración de Productos
-            </h1>
+return (
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-gray-900 font-montserrat">
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <h1 className="text-3xl font-bold mb-8">Administración de Productos</h1>
 
-                {/* FORMULARIO */}
-                <div className="lg:col-span-1">
-                    <div className="bg-white border border-gray-200 rounded-lg p-6">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                            {editingId ? 'Editar Producto' : 'Crear Producto'}
-                        </h2>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
 
-                        <form onSubmit={handleSubmit} className="space-y-4">
+      {/* FORMULARIO */}
+      <div className="lg:col-span-1">
+        <div className="bg-white border border-gray-300 rounded-none p-6">
 
-                            {/* Nombre */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Nombre
-                                </label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={formData.nombre}
-                                    onChange={(e) =>
-                                        setFormData({ ...formData, nombre: e.target.value })
-                                    }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900"
-                                />
-                            </div>
+          <h2 className="text-xl font-semibold mb-6">
+            {editingId ? "Editar Producto" : "Crear Producto"}
+          </h2>
 
-                            {/* Precio */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Precio
-                                </label>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    required
-                                    value={formData.precio}
-                                    onChange={(e) =>
-                                        setFormData({ ...formData, precio: e.target.value })
-                                    }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900"
-                                />
-                            </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
 
-                            {/* Descripción */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Descripción
-                                </label>
-                                <textarea
-                                    rows={3}
-                                    value={formData.descripcion}
-                                    onChange={(e) =>
-                                        setFormData({ ...formData, descripcion: e.target.value })
-                                    }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900"
-                                />
-                            </div>
-
-                            {/* Imagen */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Imagen (URL)
-                                </label>
-                                <input
-                                    type="text"
-                                    value={formData.imageUrl}
-                                    onChange={(e) =>
-                                        setFormData({ ...formData, imageUrl: e.target.value })
-                                    }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900"
-                                />
-                            </div>
-
-                            {/* Categorías */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Categorías
-                                </label>
-
-                                <select
-                                    multiple
-                                    value={formData.categoryIds.map(String)}
-                                    onChange={(e) => {
-                                        const selected = Array.from(e.target.selectedOptions).map(
-                                            (opt) => parseInt(opt.value)
-                                        );
-                                        setFormData({ ...formData, categoryIds: selected });
-                                    }}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900"
-                                >
-                                    {categories.map((cat) => (
-                                        <option key={cat.id} value={cat.id}>
-                                            {cat.name}
-                                        </option>
-                                    ))}
-                                </select>
-
-                                <p className="text-xs text-gray-500 mt-1">
-                                    Mantén presionado CTRL (Windows) o CMD (Mac) para seleccionar varias.
-                                </p>
-                            </div>
-
-                            {/* Botones */}
-                            <div className="flex gap-2">
-                                <button
-                                    type="submit"
-                                    className="flex-1 bg-gray-900 text-white py-2 rounded-md hover:bg-gray-800 transition-colors"
-                                >
-                                    {editingId ? 'Actualizar' : 'Crear'}
-                                </button>
-                                {editingId && (
-                                    <button
-                                        type="button"
-                                        onClick={handleCancel}
-                                        className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-gray-600"
-                                    >
-                                        Cancelar
-                                    </button>
-                                )}
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                {/* TABLA */}
-                <div className="lg:col-span-2">
-                    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-                        <table className="w-full">
-                            <thead>
-                                <tr className="bg-gray-50 border-b border-gray-200">
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Precio</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Categorías</th>
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acciones</th>
-                                </tr>
-                            </thead>
-
-                            <tbody className="divide-y divide-gray-200">
-                                {products.map((product) => (
-                                    <tr key={product.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4 text-sm text-gray-900">{product.nombre}</td>
-                                        <td className="px-6 py-4 text-sm text-gray-900">${product.precio}</td>
-                                        <td className="px-6 py-4 text-sm text-gray-900">
-                                            {product.categories?.map(c => c.name).join(', ') || '—'}
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-right">
-                                            <button
-                                                onClick={() => handleEdit(product)}
-                                                className="text-gray-600 hover:text-gray-900 mr-4"
-                                            >
-                                                Editar
-                                            </button>
-                                            <button
-                                                onClick={() => handleDelete(product.id)}
-                                                className="text-red-600 hover:text-red-800"
-                                            >
-                                                Eliminar
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-
-                        </table>
-                    </div>
-                </div>
-
+            {/* Nombre */}
+            <div>
+              <label className="block text-sm font-medium mb-1">Nombre</label>
+              <input
+                type="text"
+                required
+                value={formData.nombre}
+                onChange={(e) =>
+                  setFormData({ ...formData, nombre: e.target.value })
+                }
+                className="
+                  w-full px-3 py-2
+                  border border-gray-400
+                  rounded-none
+                  focus:outline-none 
+                  focus:border-black
+                  text-gray-900
+                "
+              />
             </div>
+
+            {/* Precio */}
+            <div>
+              <label className="block text-sm font-medium mb-1">Precio</label>
+              <input
+                type="number"
+                step="0.01"
+                required
+                value={formData.precio}
+                onChange={(e) =>
+                  setFormData({ ...formData, precio: e.target.value })
+                }
+                className="
+                  w-full px-3 py-2
+                  border border-gray-400
+                  rounded-none
+                  focus:outline-none 
+                  focus:border-black
+                  text-gray-900
+                "
+              />
+            </div>
+
+            {/* Descripción */}
+            <div>
+              <label className="block text-sm font-medium mb-1">Descripción</label>
+              <textarea
+                rows={3}
+                value={formData.descripcion}
+                onChange={(e) =>
+                  setFormData({ ...formData, descripcion: e.target.value })
+                }
+                className="
+                  w-full px-3 py-2
+                  border border-gray-400
+                  rounded-none
+                  focus:outline-none
+                  focus:border-black
+                  text-gray-900
+                "
+              />
+            </div>
+
+            {/* Imagen */}
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Imagen (URL)
+              </label>
+              <input
+                type="text"
+                value={formData.imageUrl}
+                onChange={(e) =>
+                  setFormData({ ...formData, imageUrl: e.target.value })
+                }
+                className="
+                  w-full px-3 py-2
+                  border border-gray-400
+                  rounded-none
+                  focus:outline-none
+                  focus:border-black
+                "
+              />
+            </div>
+
+            {/* Categorías */}
+            <div>
+              <label className="block text-sm font-medium mb-1">Categorías</label>
+
+              <select
+                multiple
+                value={formData.categoryIds.map(String)}
+                onChange={(e) => {
+                  const selected = Array.from(e.target.selectedOptions).map(
+                    (opt) => parseInt(opt.value)
+                  );
+                  setFormData({ ...formData, categoryIds: selected });
+                }}
+                className="
+                  w-full px-3 py-2
+                  border border-gray-400
+                  rounded-none
+                  focus:outline-none
+                  focus:border-black
+                  text-gray-900
+                "
+              >
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+
+              <p className="text-xs text-gray-500 mt-1">
+                Mantén presionado CTRL (Windows) o CMD (Mac) para seleccionar varias.
+              </p>
+            </div>
+
+            {/* Botones */}
+            <div className="flex gap-2 pt-3">
+              <button
+                type="submit"
+                className="
+                  flex-1
+                  bg-black text-white
+                  py-2
+                  rounded-none
+                  transition-colors
+                  hover:bg-gray-800
+                "
+              >
+                {editingId ? "Actualizar" : "Crear"}
+              </button>
+
+              {editingId && (
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  className="
+                    px-4 py-2
+                    border border-gray-400
+                    rounded-none
+                    hover:bg-gray-100
+                    text-gray-700
+                  "
+                >
+                  Cancelar
+                </button>
+              )}
+            </div>
+
+          </form>
         </div>
-    );
+      </div>
+
+      {/* TABLA */}
+      <div className="lg:col-span-2">
+        <div className="bg-white border border-gray-300 rounded-none overflow-hidden">
+
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-gray-100 border-b border-gray-300">
+                <th className="px-6 py-3 text-left text-xs font-semibold">Nombre</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold">Precio</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold">Categorías</th>
+                <th className="px-6 py-3 text-right text-xs font-semibold">Acciones</th>
+              </tr>
+            </thead>
+
+            <tbody className="divide-y divide-gray-200">
+              {products.map((product) => (
+                <tr key={product.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 text-sm">{product.nombre}</td>
+                  <td className="px-6 py-4 text-sm">${product.precio}</td>
+                  <td className="px-6 py-4 text-sm">
+                    {product.categories?.map((c) => c.name).join(", ") || "—"}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-right">
+
+                    <button
+                      onClick={() => handleEdit(product)}
+                      className="text-gray-700 hover:text-black mr-4"
+                    >
+                      Editar
+                    </button>
+
+                    <button
+                      onClick={() => handleDelete(product.id)}
+                      className="text-red-600 hover:text-red-800"
+                    >
+                      Eliminar
+                    </button>
+
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+);
+
 }

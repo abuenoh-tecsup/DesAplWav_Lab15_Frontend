@@ -74,17 +74,17 @@ export default function HomePage() {
         <select
           className="
     w-full
-    border border-gray-300 
-    rounded-lg 
+    border border-gray-400 
+    rounded-none
     px-4 py-2 
     bg-white 
-    text-gray-800
-    shadow-sm
+    text-gray-900
+    font-montserrat
+    appearance-none
     focus:outline-none
-    focus:ring-2
-    focus:ring-blue-200
-    focus:border-blue-500
+    focus:border-black
     transition
+    cursor-pointer
   "
           value={selectedCategory}
           onChange={(e) =>
@@ -92,6 +92,13 @@ export default function HomePage() {
               e.target.value === "all" ? "all" : Number(e.target.value)
             )
           }
+          style={{
+            backgroundImage:
+              "url(\"data:image/svg+xml;charset=UTF-8,%3Csvg viewBox='0 0 140 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolyline points='20,50 70,100 120,50' stroke='%23000' stroke-width='16' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")",
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "right 0.75rem center",
+            backgroundSize: "14px",
+          }}
         >
           <option value="all">Todas las categorías</option>
           {categories.map((cat) => (
@@ -112,35 +119,63 @@ export default function HomePage() {
             <Link
               key={product.id}
               href={`/products/${product.id}`}
-              className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow"
+              className="
+        bg-white border border-gray-300 
+        rounded-none 
+        h-64 
+        flex 
+        hover:shadow-lg 
+        transition-shadow
+      "
             >
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                {product.nombre}
-              </h2>
+              {/* LADO IZQUIERDO */}
+              <div className="flex-1 p-4 flex flex-col justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900 mb-1">
+                    {product.nombre}
+                  </h2>
 
-              <p className="text-2xl font-bold text-gray-900 mb-3">
-                ${product.precio}
-              </p>
+                  <p className="text-2xl font-bold text-gray-900 mb-3">
+                    ${product.precio}
+                  </p>
 
-              {/* Categorías del producto */}
-              {product.categories && product.categories.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {product.categories.map((cat) => (
-                    <span
-                      key={cat.id}
-                      className="bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded"
-                    >
-                      {cat.name}
-                    </span>
-                  ))}
+                  {/* Categorías */}
+                  {product.categories && product.categories.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {product.categories.map((cat) => (
+                        <span
+                          key={cat.id}
+                          className="bg-gray-200 text-gray-700 text-xs px-2 py-1"
+                        >
+                          {cat.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Descripción */}
+                  {product.descripcion && (
+                    <p className="text-gray-600 text-sm line-clamp-2">
+                      {product.descripcion}
+                    </p>
+                  )}
                 </div>
-              )}
+              </div>
 
-              {product.descripcion && (
-                <p className="text-gray-600 text-sm line-clamp-2">
-                  {product.descripcion}
-                </p>
-              )}
+              {/* LADO DERECHO (IMAGEN CUADRADA) */}
+              <div className="w-40 h-full">
+                {product.imageUrl ? (
+                  <img
+                    src={product.imageUrl}
+                    alt={product.nombre}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm">
+                    Sin imagen
+                  </div>
+                )}
+              </div>
             </Link>
           ))}
         </div>
