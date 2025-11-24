@@ -2,28 +2,36 @@
 
 import { useState, useEffect } from 'react';
 import { Product, ApiResponse } from '@/types/product';
+import { Category } from '@/types/product';
 import { useAuthGuard } from '@/hooks/useAuthGuard';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 export default function AdminPage() {
     useAuthGuard(["ADMIN"]);
-    // ESTADO
+
+    // ESTADOS
     const [products, setProducts] = useState<Product[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
+
     const [formData, setFormData] = useState({
         nombre: '',
         precio: '',
         descripcion: '',
+        imageUrl: '',
+        categoryIds: [] as number[],
     });
+
     const [editingId, setEditingId] = useState<number | null>(null);
 
-    // EFECTOS (CARGA INICIAL)
+    // CARGA INICIAL
     useEffect(() => {
         fetchProducts();
+        fetchCategories();
     }, []);
 
-    // FUNCIÓN: OBTENER PRODUCTOS (READ)
+    // FETCH PRODUCTOS
     const fetchProducts = async () => {
         try {
             const res = await fetch(`${API_URL}/products`);
@@ -36,7 +44,18 @@ export default function AdminPage() {
         }
     };
 
-    // FUNCIÓN: MANEJO DEL SUBMIT (CREATE/UPDATE)
+    // FETCH CATEGORÍAS
+    const fetchCategories = async () => {
+        try {
+            const res = await fetch(`${API_URL}/categories`);
+            const data: ApiResponse<Category[]> = await res.json();
+            if (data.success) setCategories(data.data);
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    };
+
+    // SUBMIT (CREATE / UPDATE)
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -47,22 +66,26 @@ export default function AdminPage() {
 
         try {
             const res = await fetch(url, {
-                method: method,
+                method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     nombre: formData.nombre,
-                    // Se usa parseFloat para asegurar que el precio sea un número
-                    precio: parseFloat(formData.precio), 
-                    // Se usa || undefined para evitar enviar string vacía si no hay descripción
-                    descripcion: formData.descripcion || undefined, 
+                    precio: parseFloat(formData.precio),
+                    descripcion: formData.descripcion || undefined,
+                    imageUrl: formData.imageUrl || undefined,
+                    categoryIds: formData.categoryIds,
                 }),
             });
 
             if (res.ok) {
-                // Limpiar formulario y estado de edición
-                setFormData({ nombre: '', precio: '', descripcion: '' });
+                setFormData({
+                    nombre: '',
+                    precio: '',
+                    descripcion: '',
+                    imageUrl: '',
+                    categoryIds: [],
+                });
                 setEditingId(null);
-                // Recargar la lista de productos
                 fetchProducts();
             }
         } catch (error) {
@@ -70,22 +93,21 @@ export default function AdminPage() {
         }
     };
 
-    // FUNCIÓN: MANEJO DE EDICIÓN
+    // CARGAR PRODUCTO PARA EDITAR
     const handleEdit = (product: Product) => {
         setFormData({
             nombre: product.nombre,
-            // Convertir precio a string para el input
-            precio: product.precio.toString(), 
-            // Manejar descripción opcional
-            descripcion: product.descripcion || '', 
+            precio: product.precio.toString(),
+            descripcion: product.descripcion || '',
+            imageUrl: product.imageUrl || '',
+            categoryIds: product.categories?.map(c => c.id) || [],
         });
         setEditingId(product.id);
     };
 
-    // FUNCIÓN: MANEJO DE ELIMINACIÓN (DELETE)
+    // ELIMINAR PRODUCTO
     const handleDelete = async (id: number) => {
         if (!confirm('¿Estás seguro?')) return;
-
         try {
             const res = await fetch(`${API_URL}/products/${id}`, {
                 method: 'DELETE',
@@ -96,13 +118,19 @@ export default function AdminPage() {
         }
     };
 
-    // FUNCIÓN: CANCELAR EDICIÓN
+    // CANCELAR EDICIÓN
     const handleCancel = () => {
-        setFormData({ nombre: '', precio: '', descripcion: '' });
+        setFormData({
+            nombre: '',
+            precio: '',
+            descripcion: '',
+            imageUrl: '',
+            categoryIds: [],
+        });
         setEditingId(null);
     };
 
-    // VISTA: CARGANDO
+    // LOADING
     if (loading) {
         return (
             <div className="max-w-7xl mx-auto px-4 py-12">
@@ -111,22 +139,25 @@ export default function AdminPage() {
         );
     }
 
-    // VISTA PRINCIPAL
+    // UI COMPLETA
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-gray-900">
             <h1 className="text-3xl font-bold text-gray-900 mb-8">
                 Administración de Productos
             </h1>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* -------------------- 1. FORMULARIO (COLUMNA IZQUIERDA) -------------------- */}
+
+                {/* FORMULARIO */}
                 <div className="lg:col-span-1">
                     <div className="bg-white border border-gray-200 rounded-lg p-6">
                         <h2 className="text-xl font-semibold text-gray-900 mb-4">
                             {editingId ? 'Editar Producto' : 'Crear Producto'}
                         </h2>
+
                         <form onSubmit={handleSubmit} className="space-y-4">
-                            {/* Campo Nombre */}
+
+                            {/* Nombre */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     Nombre
@@ -138,11 +169,11 @@ export default function AdminPage() {
                                     onChange={(e) =>
                                         setFormData({ ...formData, nombre: e.target.value })
                                     }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 text-gray-900"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900"
                                 />
                             </div>
 
-                            {/* Campo Precio */}
+                            {/* Precio */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     Precio
@@ -155,11 +186,11 @@ export default function AdminPage() {
                                     onChange={(e) =>
                                         setFormData({ ...formData, precio: e.target.value })
                                     }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 text-gray-900"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900"
                                 />
                             </div>
 
-                            {/* Campo Descripción */}
+                            {/* Descripción */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     Descripción
@@ -170,10 +201,55 @@ export default function AdminPage() {
                                     onChange={(e) =>
                                         setFormData({ ...formData, descripcion: e.target.value })
                                     }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 text-gray-900"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900"
                                 />
                             </div>
 
+                            {/* Imagen */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Imagen (URL)
+                                </label>
+                                <input
+                                    type="text"
+                                    value={formData.imageUrl}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, imageUrl: e.target.value })
+                                    }
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900"
+                                />
+                            </div>
+
+                            {/* Categorías */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Categorías
+                                </label>
+
+                                <select
+                                    multiple
+                                    value={formData.categoryIds.map(String)}
+                                    onChange={(e) => {
+                                        const selected = Array.from(e.target.selectedOptions).map(
+                                            (opt) => parseInt(opt.value)
+                                        );
+                                        setFormData({ ...formData, categoryIds: selected });
+                                    }}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900"
+                                >
+                                    {categories.map((cat) => (
+                                        <option key={cat.id} value={cat.id}>
+                                            {cat.name}
+                                        </option>
+                                    ))}
+                                </select>
+
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Mantén presionado CTRL (Windows) o CMD (Mac) para seleccionar varias.
+                                </p>
+                            </div>
+
+                            {/* Botones */}
                             <div className="flex gap-2">
                                 <button
                                     type="submit"
@@ -195,31 +271,26 @@ export default function AdminPage() {
                     </div>
                 </div>
 
-                {/* -------------------- 2. TABLA DE PRODUCTOS (COLUMNA DERECHA) -------------------- */}
+                {/* TABLA */}
                 <div className="lg:col-span-2">
                     <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
                         <table className="w-full">
                             <thead>
                                 <tr className="bg-gray-50 border-b border-gray-200">
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                        Nombre
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                        Precio
-                                    </th>
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                                        Acciones
-                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Precio</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Categorías</th>
+                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acciones</th>
                                 </tr>
                             </thead>
+
                             <tbody className="divide-y divide-gray-200">
                                 {products.map((product) => (
                                     <tr key={product.id} className="hover:bg-gray-50">
+                                        <td className="px-6 py-4 text-sm text-gray-900">{product.nombre}</td>
+                                        <td className="px-6 py-4 text-sm text-gray-900">${product.precio}</td>
                                         <td className="px-6 py-4 text-sm text-gray-900">
-                                            {product.nombre}
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-gray-900">
-                                            ${product.precio}
+                                            {product.categories?.map(c => c.name).join(', ') || '—'}
                                         </td>
                                         <td className="px-6 py-4 text-sm text-right">
                                             <button
@@ -238,9 +309,11 @@ export default function AdminPage() {
                                     </tr>
                                 ))}
                             </tbody>
+
                         </table>
                     </div>
                 </div>
+
             </div>
         </div>
     );
