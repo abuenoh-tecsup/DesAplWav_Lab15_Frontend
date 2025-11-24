@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { registerUser } from "@/services/auth";
 import { useRouter } from "next/navigation";
+import { usePublicGuard } from "@/hooks/usePublicGuard";
 
 export default function RegisterPage() {
+  usePublicGuard();
   const router = useRouter();
 
   const [name, setName] = useState("");
@@ -94,7 +96,10 @@ export default function RegisterPage() {
 
         <p className="mt-6 text-center text-sm text-gray-600">
           ¿Ya tienes cuenta?{" "}
-          <a href="/login" className="text-gray-900 font-medium hover:underline">
+          <a
+            href="/login"
+            className="text-gray-900 font-medium hover:underline"
+          >
             Inicia sesión aquí
           </a>
         </p>

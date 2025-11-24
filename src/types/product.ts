@@ -3,6 +3,15 @@ export interface Product {
     nombre: string;
     precio: number;
     descripcion?: string;
+    imageUrl?: string;
+    categories?: Category[];
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface Category {
+    id: number;
+    name: string;
     createdAt?: string;
     updatedAt?: string;
 }

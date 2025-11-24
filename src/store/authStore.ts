@@ -1,49 +1,49 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import type { User } from '@/types/auth';
 
-interface AuthState {
+interface AuthStorage {
   token: string | null;
   user: User | null;
-  loading: boolean;
+}
 
-  // Actions
+interface AuthState extends AuthStorage {
   setToken: (token: string) => void;
   setUser: (user: User | null) => void;
   clearAuth: () => void;
   logout: () => void;
-
-  // Helpers
   isAdmin: () => boolean;
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
-  token: typeof window !== 'undefined' ? localStorage.getItem('token') : null,
-  user: null,
-  loading: false,
+// Custom storage compatible con zustand persist
+const localStorageAuth: any = {
+  getItem: (name: string) => {
+    const value = localStorage.getItem(name);
+    return value ? JSON.parse(value) : null;
+  },
+  setItem: (name: string, value: AuthStorage) => {
+    localStorage.setItem(name, JSON.stringify(value));
+  },
+  removeItem: (name: string) => {
+    localStorage.removeItem(name);
+  },
+};
 
-  setToken: (token) => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('token', token);
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set, get) => ({
+      token: null,
+      user: null,
+
+      setToken: (token) => set({ token }),
+      setUser: (user) => set({ user }),
+      clearAuth: () => set({ token: null, user: null }),
+      logout: () => get().clearAuth(),
+      isAdmin: () => !!(get().user?.roles?.includes('ADMIN')),
+    }),
+    {
+      name: 'auth',
+      storage: localStorageAuth, // Usamos nuestro custom storage
     }
-    set({ token });
-  },
-
-  setUser: (user) => set({ user }),
-
-  clearAuth: () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('token');
-    }
-    set({ token: null, user: null });
-  },
-
-  logout: () => {
-    // alias con semántica
-    get().clearAuth();
-  },
-
-  isAdmin: () => {
-    const user = get().user;
-    return !!(user && Array.isArray(user.roles) && user.roles.includes('ADMIN'));
-  },
-}));
+  )
+);

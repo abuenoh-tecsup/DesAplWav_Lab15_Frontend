@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { login } from "@/services/auth";
 import { useRouter } from "next/navigation";
+import { usePublicGuard } from "@/hooks/usePublicGuard";
 
 export default function LoginPage() {
+  usePublicGuard();
   const router = useRouter();
 
   const [email, setEmail] = useState("");
@@ -30,7 +32,9 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md bg-white p-8 rounded-lg border border-gray-200 shadow-sm">
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">Iniciar Sesión</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-1">
+          Iniciar Sesión
+        </h1>
         <p className="text-gray-600 text-sm mb-6">
           Ingresa tus credenciales para continuar
         </p>
@@ -78,7 +82,10 @@ export default function LoginPage() {
 
         <p className="mt-6 text-center text-sm text-gray-600">
           ¿No tienes una cuenta?{" "}
-          <a href="/register" className="text-gray-900 font-medium hover:underline">
+          <a
+            href="/register"
+            className="text-gray-900 font-medium hover:underline"
+          >
             Regístrate aquí
           </a>
         </p>
